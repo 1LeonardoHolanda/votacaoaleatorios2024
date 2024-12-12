@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Votação Clínica 2024</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f9;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .item {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background: #fff;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .item:hover {
+            background-color: #e0e0e0;
+        }
+        .selected {
+            background-color: #d1ffd6;
+        }
+        .order {
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .button {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .button:hover {
+            background-color: #45a049;
+        }
+        .limit-message {
+            text-align: center;
+            color: red;
+            margin-top: 10px;
+        }
+        #confirmation {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+        #confirmation p {
+            margin-bottom: 20px;
+        }
+        #message-box {
+            margin: 20px auto;
+            padding: 15px;
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-width: 90%;
+            text-align: left;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>Votação Clínica 2024</h1>
+    <p>Selecione suas opções favoritas em ordem de preferência. Limite: 5 votos.</p>
+    <div id="options">
+        <!-- Itens serão gerados dinamicamente -->
+    </div>
+    <p id="limit-message" class="limit-message"></p>
+    <button class="button" onclick="finalizeVote()">Finalizar Votação</button>
+    <div id="confirmation">
+        <p>Pronto! Agora copie e cole esta mensagem no WhatsApp para podermos calcular os votos.</p>
+        <div id="message-box"></div>
+        <button class="button" onclick="copyToClipboard()">Copiar</button>
+    </div>
+
+    <script>
+        const items = [
+            "Cagaram no Saco e jogaram na Lixeira do Banheiro",
+            "Comeram o purê de Iohana com Vasilha e Tudo",
+            "Isabela comeu o Danone dela e de Guilherme sem querer, porém não deixou reposição",
+            "Comeram a Laranja que Raiane do cavalo deixou na geladeira",
+            "Uber espancado por paciente",
+            "Paciente pediu uma reunião com os sócios para comprar metade da clínica",
+            "Pegaram paciente dentro do DML mexendo nos estoques",
+            "Magaly ficou presa no banheiro com direito a arrombamento da porta",
+            "Cintia dançando Jingle Bells na fachada da clínica",
+            "Daniel entrando no carro do pcte pensando que era o uber dele",
+            "Regra do “SE NÃO FIZER, NÃO AVALIA”",
+            "Sayonara arrumou um noivo em Dubai/Paquistão",
+            "Kesinha fez a cirurgia da hemorroida 😂😂😂.",
+            "Kesia vindo com o orifício cheio de ponto fazer laudo Sulamerica para enviar para o plano",
+            "Stefani e Kalyne foram de arrasta",
+            "Olhar as pastas Unimed toda quarta🤡",
+            "Todos participaram da cotinha de São João e malocaram os Kits festa restante e levou pra casa 🏠",
+            "Tia Betinha escondeu o café no armário dela e Vanildo foi lá abriu o armário e pegou igual", 
+            "Paciente desparafusou gancho/cabide do banheiro e levou pra casa"
+        ];
+
+        let selectedItems = [];
+        const maxVotes = 5;
+
+        const optionsContainer = document.getElementById('options');
+        const limitMessage = document.getElementById('limit-message');
+        const confirmationContainer = document.getElementById('confirmation');
+        const messageBox = document.getElementById('message-box');
+
+        function renderOptions() {
+            items.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'item';
+                div.innerHTML = `<span>${item}</span><span class="order" id="order-${index}"></span>`;
+                div.onclick = () => toggleSelection(index);
+                optionsContainer.appendChild(div);
+            });
+        }
+
+        function toggleSelection(index) {
+            const itemIndex = selectedItems.indexOf(index);
+
+            if (itemIndex === -1) {
+                if (selectedItems.length < maxVotes) {
+                    selectedItems.push(index);
+                } else {
+                    limitMessage.textContent = `Você só pode selecionar até ${maxVotes} opções!`;
+                    return;
+                }
+            } else {
+                selectedItems.splice(itemIndex, 1);
+            }
+
+            limitMessage.textContent = ''; // Limpa a mensagem caso tenha sido exibida
+            updateSelection();
+        }
+
+        function updateSelection() {
+            document.querySelectorAll('.item').forEach((item, index) => {
+                item.classList.remove('selected');
+                document.getElementById(`order-${index}`).innerText = '';
+            });
+
+            selectedItems.forEach((itemIndex, order) => {
+                const itemDiv = document.querySelectorAll('.item')[itemIndex];
+                itemDiv.classList.add('selected');
+                document.getElementById(`order-${itemIndex}`).innerText = order + 1;
+            });
+        }
+
+        function finalizeVote() {
+            if (selectedItems.length === 0) {
+                alert("Selecione pelo menos uma opção!");
+                return;
+            }
+
+            const rankedItems = selectedItems.map(index => items[index]);
+            const message = `Meus votos são:\n${rankedItems.map((item, i) => `${i + 1}. ${item}`).join('\n')}`;
+            messageBox.textContent = message; // Mostra a mensagem no box
+            navigator.clipboard.writeText(message); // Copia a mensagem automaticamente
+
+            confirmationContainer.style.display = 'block';
+
+            // Adiciona rolagem até o final da página
+            confirmationContainer.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        }
+
+        function copyToClipboard() {
+            const message = messageBox.textContent;
+            navigator.clipboard.writeText(message);
+            alert("Mensagem copiada!");
+        }
+
+        renderOptions();
+    </script>
+</body>
+</html>
